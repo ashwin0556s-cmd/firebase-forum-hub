@@ -1,16 +1,27 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Thread } from "@/data/forumData";
-import { MessageSquare, Eye, Pin } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { MessageSquare, Pin } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { formatDistanceToNow } from "date-fns";
 
 interface ThreadRowProps {
-  thread: Thread;
+  thread: {
+    id: string;
+    title: string;
+    pinned: boolean;
+    created_at: string;
+    profiles: { display_name: string };
+    categories?: { slug: string; name: string; icon: string };
+    posts: { count: number }[];
+  };
   index: number;
 }
 
 const ThreadRow = ({ thread, index }: ThreadRowProps) => {
+  const postCount = thread.posts?.[0]?.count ?? 0;
+  const authorInitial = thread.profiles.display_name.charAt(0).toUpperCase();
+  const timeAgo = formatDistanceToNow(new Date(thread.created_at), { addSuffix: true });
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -8 }}
@@ -23,7 +34,7 @@ const ThreadRow = ({ thread, index }: ThreadRowProps) => {
       >
         <Avatar className="h-10 w-10 shrink-0">
           <AvatarFallback className="bg-secondary text-sm font-semibold">
-            {thread.authorAvatar}
+            {authorInitial}
           </AvatarFallback>
         </Avatar>
 
@@ -35,25 +46,21 @@ const ThreadRow = ({ thread, index }: ThreadRowProps) => {
             </h4>
           </div>
           <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-xs text-muted-foreground">{thread.author}</span>
-            {thread.tags?.slice(0, 2).map(tag => (
-              <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-medium">
-                {tag}
-              </Badge>
-            ))}
+            <span className="text-xs text-muted-foreground">{thread.profiles.display_name}</span>
+            {thread.categories && (
+              <span className="text-xs text-muted-foreground">
+                in {thread.categories.icon} {thread.categories.name}
+              </span>
+            )}
           </div>
         </div>
 
         <div className="hidden sm:flex items-center gap-5 text-xs text-muted-foreground shrink-0">
           <span className="flex items-center gap-1">
             <MessageSquare className="h-3.5 w-3.5" />
-            {thread.replyCount}
+            {postCount}
           </span>
-          <span className="flex items-center gap-1">
-            <Eye className="h-3.5 w-3.5" />
-            {thread.viewCount}
-          </span>
-          <span className="w-20 text-right">{thread.lastReplyAt}</span>
+          <span className="w-24 text-right">{timeAgo}</span>
         </div>
       </Link>
     </motion.div>
