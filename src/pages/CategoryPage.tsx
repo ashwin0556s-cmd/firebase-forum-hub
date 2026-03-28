@@ -1,25 +1,15 @@
 import { useParams, Link } from "react-router-dom";
 import ForumHeader from "@/components/ForumHeader";
 import ThreadRow from "@/components/ThreadRow";
-import { categories, threads } from "@/data/forumData";
-import { ArrowLeft } from "lucide-react";
+import { useCategories, useThreads } from "@/hooks/useForumData";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const CategoryPage = () => {
-  const { id } = useParams();
-  const category = categories.find(c => c.id === id);
-  const categoryThreads = threads.filter(t => t.categoryId === id);
-
-  if (!category) {
-    return (
-      <div className="min-h-screen bg-background">
-        <ForumHeader />
-        <div className="container mx-auto px-4 py-16 text-center">
-          <p className="text-muted-foreground">Category not found</p>
-        </div>
-      </div>
-    );
-  }
+  const { slug } = useParams();
+  const { data: categories } = useCategories();
+  const { data: threads, isLoading } = useThreads(slug);
+  const category = categories?.find(c => c.slug === slug);
 
   return (
     <div className="min-h-screen bg-background">
@@ -37,20 +27,24 @@ const CategoryPage = () => {
           className="mb-8"
         >
           <h1 className="text-2xl font-extrabold tracking-tight">
-            {category.icon} {category.name}
+            {category ? `${category.icon} ${category.name}` : "Category"}
           </h1>
-          <p className="text-muted-foreground mt-1">{category.description}</p>
+          {category && <p className="text-muted-foreground mt-1">{category.description}</p>}
         </motion.div>
 
-        <div className="space-y-2">
-          {categoryThreads.length > 0 ? (
-            categoryThreads.map((thread, i) => (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : threads && threads.length > 0 ? (
+          <div className="space-y-2">
+            {threads.map((thread: any, i: number) => (
               <ThreadRow key={thread.id} thread={thread} index={i} />
-            ))
-          ) : (
-            <p className="text-center text-muted-foreground py-12">No threads yet in this category.</p>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-muted-foreground py-12">No threads yet in this category.</p>
+        )}
       </main>
     </div>
   );

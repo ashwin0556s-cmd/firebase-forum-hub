@@ -1,9 +1,12 @@
-import { MessageSquare, Search, Bell, Plus } from "lucide-react";
+import { MessageSquare, Search, Bell, Plus, LogOut, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ForumHeader = () => {
+  const { user, signOut } = useAuth();
+
   return (
     <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between gap-4 px-4">
@@ -25,18 +28,26 @@ const ForumHeader = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">
-              3
-            </span>
-          </Button>
-          <Link to="/new">
-            <Button size="sm" className="gap-1.5 font-semibold">
-              <Plus className="h-4 w-4" />
-              New Thread
-            </Button>
-          </Link>
+          {user ? (
+            <>
+              <Link to="/new">
+                <Button size="sm" className="gap-1.5 font-semibold">
+                  <Plus className="h-4 w-4" />
+                  New Thread
+                </Button>
+              </Link>
+              <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </>
+          ) : (
+            <Link to="/auth">
+              <Button size="sm" variant="outline" className="gap-1.5 font-semibold">
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </header>
